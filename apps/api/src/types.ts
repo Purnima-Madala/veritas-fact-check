@@ -1,3 +1,3 @@
 export type Provider = 'openai' | 'gemini' | 'claude' | 'groq' | 'openrouter' | 'demo';
 export type ModelResult = { id: string; name: string; verdict: 'Likely true' | 'Likely false' | 'Uncertain'; response: string; confidence: number; correctness: number; relevance: number; latency: number; tokens: number; sources: { title: string; url: string }[] };
-export type Analysis = { id?: string; claim: string; createdAt: string; models: ModelResult[]; recommendation: string; consensus: number; hallucinationRisk: number; summary: string };
+export type Analysis = { id?: string; claim: string; createdAt: string; models: ModelResult[]; recommendation: string; consensus: number; hallucinationRisk: number; summary: string; providerErrors?: { provider: string; message: string }[] };
