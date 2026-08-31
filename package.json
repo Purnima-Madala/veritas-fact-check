@@ -1,0 +1,12 @@
+{
+  "name": "veritas-ai-fact-check",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @veritas/web\" \"npm run dev -w @veritas/api\"",
+    "build": "npm run build -w @veritas/web && npm run build -w @veritas/api",
+    "start": "npm run start -w @veritas/api"
+  },
+  "devDependencies": { "concurrently": "^9.1.2" }
+}
