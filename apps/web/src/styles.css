@@ -7,3 +7,4 @@
 @media(max-width:650px){nav{padding:0 18px}.links a{display:none}.nav-account{font-size:0}.nav-account svg{width:19px}.hero{padding:74px 22px}.trust{flex-direction:column;gap:8px}.section-head,.about{display:block}.section-head p{margin-top:18px}.recommend,.chartgrid{grid-template-columns:1fr}.about{padding-top:55px}.cube-stage{padding-left:0;padding-right:0}.metric-cube{min-width:48px}.auth-modal{padding:27px 22px}}
 .results{display:flex;flex-direction:column}.results>.cards{order:-1}
 .provider-errors{margin-top:18px;padding:12px 16px;border:1px solid #e6b7a9;background:#fff4f0;color:#8d3426;font-size:13px}.provider-errors p{margin:5px 0}
+.results>.recommend{margin-top:24px}
