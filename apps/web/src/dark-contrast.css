@@ -1,5 +1,5 @@
 /* Dark-theme-only contrast improvements. Light-theme colors remain unchanged. */
-main.dark{--blue:#8de0db;--muted:#c0d5d8;--line:#477277;--wash:#1d474b}
+main.dark{--blue:#8de0db;--muted:#c0d5d8;--line:#477277;--wash:#1d474b;color:var(--ink)}
 main.dark .model.on{background:#286267;border-color:#8de0db;color:#f4ffff}
 main.dark .pills span{background:#245458;color:#c3fffb}
 main.dark .sources a,main.dark .trusted-sources a,main.dark .text-button{color:#9ee9e4}
