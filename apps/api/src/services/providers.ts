@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import type { ModelResult, Provider } from '../types.js';
 
-const system = `You are Veritas, an evidence-first fact-checking analyst. Analyze the claim carefully. Return strict JSON only with verdict (Likely true, Likely false, or Uncertain), response (a concise explanation), confidence (0-100), correctness (0-100), relevance (0-100), and sources (array of up to 3 objects with title and url). Never invent sources; if you cannot verify, return an empty sources array and say so.`;
+const system = `You are Veritas, an evidence-first fact-checking analyst. Analyze the claim carefully. Return strict JSON only with verdict (Likely true, Likely false, or Uncertain), response (a concise explanation of at most 4 sentences and 110 words), confidence (0-100), correctness (0-100), relevance (0-100), and sources (array of up to 3 objects with title and url). Never invent sources; if you cannot verify, return an empty sources array and say so. Do not add any text before or after the JSON object.`;
 const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', nvidia: 'NVIDIA NIM', demo: 'Evidence baseline' };
 
 function demo(claim: string, provider: Provider): ModelResult {
@@ -10,9 +10,9 @@ function demo(claim: string, provider: Provider): ModelResult {
 }
 
 function parse(text: string, provider: Provider, latency: number): ModelResult {
-  const clean = text.replace(/^```json\s*|```$/g, '').trim();
+  const clean = text.replace(/^```json\s*|```$/g, '').trim(); const json = clean.match(/\{[\s\S]*\}/)?.[0] || clean;
   try {
-    const data = JSON.parse(clean);
+    const data = JSON.parse(json);
     return { id: provider, name: names[provider], verdict: data.verdict || 'Uncertain', response: data.response || text, confidence: Number(data.confidence) || 50, correctness: Number(data.correctness) || 50, relevance: Number(data.relevance) || 50, latency, tokens: Math.ceil(text.length / 4), sources: Array.isArray(data.sources) ? data.sources.slice(0, 3) : [] };
   } catch { return { ...demo('', provider), response: text, latency, tokens: Math.ceil(text.length / 4) }; }
 }
@@ -43,7 +43,7 @@ export async function askProvider(provider: Provider, claim: string): Promise<Mo
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
   if (provider === 'nvidia' && process.env.NVIDIA_API_KEY) {
-    const started = Date.now(); const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` }, body: JSON.stringify({ model: process.env.NVIDIA_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b', max_tokens: 900, temperature: 0, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
+    const started = Date.now(); const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` }, body: JSON.stringify({ model: process.env.NVIDIA_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b', max_tokens: 500, temperature: 0, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
     if (!response.ok) throw new Error(`NVIDIA request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
