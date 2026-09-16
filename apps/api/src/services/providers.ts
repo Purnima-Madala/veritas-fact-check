@@ -3,7 +3,7 @@ import type { ModelResult, Provider } from '../types.js';
 import { filterProviderSources } from './trustedSources.js';
 
 const system = `You are Veritas, an evidence-first fact-checking analyst. Analyze the claim carefully. Return strict JSON only with verdict (Likely true, Likely false, or Uncertain), response (a concise explanation of at most 4 sentences and 110 words), confidence (0-100), correctness (0-100), relevance (0-100), and sources (array of up to 3 objects with title and url). Never invent sources; if you cannot verify, return an empty sources array and say so. Do not add any text before or after the JSON object.`;
-const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', llama: 'Llama — free fallback', deepseek: 'DeepSeek — free fallback', huggingface: 'Hugging Face', nvidia: 'NVIDIA NIM', mistral: 'Mistral', groq: 'GroqCloud', demo: 'Evidence baseline' };
+const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', llama: 'Llama — free fallback', deepseek: 'DeepSeek — free fallback', huggingface: 'Hugging Face', nvidia: 'NVIDIA NIM', mistral: 'Mistral', demo: 'Evidence baseline' };
 
 function demo(claim: string, provider: Provider): ModelResult {
   const score = provider === 'demo' ? 74 : 68;
@@ -67,11 +67,6 @@ export async function askProvider(provider: Provider, claim: string): Promise<Mo
   if (provider === 'mistral' && process.env.MISTRAL_API_KEY) {
     const started = Date.now(); const response = await fetch('https://api.mistral.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.MISTRAL_API_KEY}` }, body: JSON.stringify({ model: process.env.MISTRAL_MODEL || 'mistral-small-latest', temperature: 0, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
     if (!response.ok) throw new Error(`Mistral request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
-    const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
-  }
-  if (provider === 'groq' && process.env.GROQ_API_KEY) {
-    const started = Date.now(); const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` }, body: JSON.stringify({ model: process.env.GROQ_MODEL || 'groq/compound-mini', temperature: 0, max_tokens: 900, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
-    if (!response.ok) throw new Error(`Groq request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
   return demo(claim, provider);
