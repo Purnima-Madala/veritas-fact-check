@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { filterTrustedSources } from './trustedSources.js';
 import type { Analysis } from '../types.js';
 
 export async function buildReport(analysis: Analysis): Promise<Buffer> {
@@ -8,7 +9,8 @@ export async function buildReport(analysis: Analysis): Promise<Buffer> {
     doc.fontSize(11).fillColor('#52606d').text(`Generated ${new Date(analysis.createdAt).toLocaleString()}`); doc.moveDown();
     doc.fontSize(14).fillColor('#102a43').text('Claim'); doc.fontSize(11).fillColor('#243b53').text(analysis.claim); doc.moveDown();
     doc.fontSize(14).fillColor('#102a43').text(`Recommendation — ${analysis.consensus}% consensus`); doc.fontSize(11).fillColor('#243b53').text(analysis.recommendation); doc.moveDown();
-    analysis.models.forEach((m) => { doc.fontSize(13).fillColor('#102a43').text(`${m.name}: ${m.verdict} (${m.confidence}% confidence)`); doc.fontSize(10).fillColor('#243b53').text(m.response); if (m.sources.length) doc.fillColor('#52606d').text(`Sources: ${m.sources.map(s => s.title).join('; ')}`); doc.moveDown(); });
+    if (analysis.overallAnswer) { doc.fontSize(14).fillColor('#102a43').text(`Overall answer — ${analysis.overallAnswer.correctnessScore}% correctness estimate`); doc.fontSize(11).fillColor('#243b53').text(analysis.overallAnswer.answer); doc.moveDown(); doc.fontSize(11).fillColor('#52606d').text(analysis.overallAnswer.referenceStatus); if (analysis.overallAnswer.references.length) doc.text(`Trusted references: ${analysis.overallAnswer.references.map(source => source.title).join('; ')}`); doc.moveDown(); }
+    analysis.models.forEach((m) => { const sources = filterTrustedSources(m.sources); doc.fontSize(13).fillColor('#102a43').text(`${m.name}: ${m.verdict} (${m.confidence}% confidence)`); doc.fontSize(10).fillColor('#243b53').text(m.response); if (sources.length) doc.fillColor('#52606d').text(`Sources: ${sources.map(s => s.title).join('; ')}`); doc.moveDown(); });
     doc.end();
   });
 }

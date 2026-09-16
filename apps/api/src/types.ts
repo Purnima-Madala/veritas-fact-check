@@ -1,3 +1,4 @@
 export type Provider = 'openai' | 'gemini' | 'claude' | 'openrouter' | 'llama' | 'deepseek' | 'huggingface' | 'nvidia' | 'demo';
 export type ModelResult = { id: string; name: string; verdict: 'Likely true' | 'Likely false' | 'Uncertain'; response: string; confidence: number; correctness: number; relevance: number; latency: number; tokens: number; sources: { title: string; url: string }[] };
-export type Analysis = { id?: string; claim: string; createdAt: string; models: ModelResult[]; recommendation: string; consensus: number; hallucinationRisk: number; summary: string; providerErrors?: { provider: string; message: string }[] };
+export type OverallAnswer = { verdict: ModelResult['verdict']; correctnessScore: number; answer: string; references: { title: string; url: string }[]; referenceStatus: string };
+export type Analysis = { id?: string; claim: string; createdAt: string; models: ModelResult[]; recommendation: string; consensus: number; hallucinationRisk: number; summary: string; overallAnswer: OverallAnswer; providerErrors?: { provider: string; message: string }[] };
