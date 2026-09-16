@@ -48,7 +48,7 @@ export async function askProvider(provider: Provider, claim: string): Promise<Mo
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
   if (provider === 'nvidia' && process.env.NVIDIA_API_KEY) {
-    const started = Date.now(); const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` }, body: JSON.stringify({ model: process.env.NVIDIA_MODEL || 'nvidia/llama-3.3-nemotron-super-49b-v1', max_tokens: 900, temperature: 0, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
+    const started = Date.now(); const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` }, body: JSON.stringify({ model: process.env.NVIDIA_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b', max_tokens: 900, temperature: 0, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });
     if (!response.ok) throw new Error(`NVIDIA request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
