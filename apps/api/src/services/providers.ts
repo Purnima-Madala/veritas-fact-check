@@ -6,7 +6,8 @@ const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemi
 
 function demo(claim: string, provider: Provider): ModelResult {
   const score = provider === 'demo' ? 74 : 68;
-  return { id: provider, name: names[provider], verdict: 'Uncertain', response: `No live ${names[provider]} key is configured. This is a transparent demo assessment: “${claim}” needs corroboration from primary, dated sources before it can be rated true or false.`, confidence: score, correctness: score - 3, relevance: 91, latency: 310, tokens: 126, sources: [{ title: 'How to evaluate sources', url: 'https://www.factcheck.org/our-process/' }] };
+  const explanation = provider === 'demo' ? `This is Veritas's built-in Evidence baseline. It does not use an API key or live AI service. “${claim}” needs corroboration from primary, dated sources before it can be rated true or false.` : `No live ${names[provider]} key is configured. This is a transparent demo assessment: “${claim}” needs corroboration from primary, dated sources before it can be rated true or false.`;
+  return { id: provider, name: names[provider], verdict: 'Uncertain', response: explanation, confidence: score, correctness: score - 3, relevance: 91, latency: 310, tokens: 126, sources: [{ title: 'How to evaluate sources', url: 'https://www.factcheck.org/our-process/' }] };
 }
 
 function parse(text: string, provider: Provider, latency: number): ModelResult {
