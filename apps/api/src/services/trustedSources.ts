@@ -15,7 +15,7 @@ function approvedHost(hostname: string) {
   return trustedDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
 }
 
-export function filterTrustedSources(sources: unknown): TrustedSource[] {
+export function filterProviderSources(sources: unknown): TrustedSource[] {
   if (!Array.isArray(sources)) return [];
   const seen = new Set<string>();
   return sources.flatMap((source): TrustedSource[] => {
@@ -24,11 +24,15 @@ export function filterTrustedSources(sources: unknown): TrustedSource[] {
     if (typeof title !== 'string' || typeof url !== 'string') return [];
     try {
       const parsed = new URL(url);
-      if (parsed.protocol !== 'https:' || !approvedHost(parsed.hostname.toLowerCase()) || seen.has(parsed.href)) return [];
+      if (!['http:', 'https:'].includes(parsed.protocol) || seen.has(parsed.href)) return [];
       seen.add(parsed.href);
       return [{ title: title.trim().slice(0, 140) || parsed.hostname, url: parsed.href }];
     } catch { return []; }
-  });
+  }).slice(0, 3);
+}
+
+export function filterTrustedSources(sources: unknown): TrustedSource[] {
+  return filterProviderSources(sources).filter(source => approvedHost(new URL(source.url).hostname.toLowerCase()));
 }
 
 export function collectTrustedSources(models: ModelResult[]): TrustedSource[] {
