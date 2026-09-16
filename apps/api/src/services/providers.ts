@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import type { ModelResult, Provider } from '../types.js';
 
 const system = `You are Veritas, an evidence-first fact-checking analyst. Analyze the claim carefully. Return strict JSON only with verdict (Likely true, Likely false, or Uncertain), response (a concise explanation), confidence (0-100), correctness (0-100), relevance (0-100), and sources (array of up to 3 objects with title and url). Never invent sources; if you cannot verify, return an empty sources array and say so.`;
-const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', groq: 'Groq Llama', openrouter: 'OpenRouter Free', nvidia: 'NVIDIA NIM', demo: 'Evidence baseline' };
+const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', nvidia: 'NVIDIA NIM', demo: 'Evidence baseline' };
 
 function demo(claim: string, provider: Provider): ModelResult {
   const score = provider === 'demo' ? 74 : 68;
@@ -36,11 +36,6 @@ export async function askProvider(provider: Provider, claim: string): Promise<Mo
     if (!response.ok) throw new Error(`Claude request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
     const data = await response.json() as { content?: { type: string; text?: string }[] };
     return parse(data.content?.find(c => c.type === 'text')?.text || '', provider, Date.now() - started);
-  }
-  if (provider === 'groq' && process.env.GROQ_API_KEY) {
-    const started = Date.now(); const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.GROQ_API_KEY}` }, body: JSON.stringify({ model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: system }, { role: 'user', content: claim }], response_format: { type: 'json_object' } }) });
-    if (!response.ok) throw new Error(`Groq request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
-    const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
   }
   if (provider === 'openrouter' && process.env.OPENROUTER_API_KEY) {
     const started = Date.now(); const response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': process.env.CLIENT_ORIGIN || 'http://localhost:5173', 'X-OpenRouter-Title': 'Veritas Fact Check' }, body: JSON.stringify({ model: process.env.OPENROUTER_MODEL || 'openrouter/free', messages: [{ role: 'system', content: system }, { role: 'user', content: claim }], response_format: { type: 'json_object' } }) });
