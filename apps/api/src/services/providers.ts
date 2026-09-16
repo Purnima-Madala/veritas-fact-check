@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import type { ModelResult, Provider } from '../types.js';
 
 const system = `You are Veritas, an evidence-first fact-checking analyst. Analyze the claim carefully. Return strict JSON only with verdict (Likely true, Likely false, or Uncertain), response (a concise explanation of at most 4 sentences and 110 words), confidence (0-100), correctness (0-100), relevance (0-100), and sources (array of up to 3 objects with title and url). Never invent sources; if you cannot verify, return an empty sources array and say so. Do not add any text before or after the JSON object.`;
-const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', nvidia: 'NVIDIA NIM', demo: 'Evidence baseline' };
+const names: Record<Provider, string> = { openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic Claude', openrouter: 'OpenRouter Free', llama: 'Llama Free', deepseek: 'DeepSeek Free', huggingface: 'Hugging Face', nvidia: 'NVIDIA NIM', demo: 'Evidence baseline' };
 
 function demo(claim: string, provider: Provider): ModelResult {
   const score = provider === 'demo' ? 74 : 68;
@@ -43,6 +43,20 @@ export async function askProvider(provider: Provider, claim: string): Promise<Mo
     const started = Date.now(); const response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': process.env.CLIENT_ORIGIN || 'http://localhost:5173', 'X-OpenRouter-Title': 'Veritas Fact Check' }, body: JSON.stringify({ model: process.env.OPENROUTER_MODEL || 'openrouter/free', messages: [{ role: 'system', content: system }, { role: 'user', content: claim }], response_format: { type: 'json_object' } }) });
     if (!response.ok) throw new Error(`OpenRouter request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
     const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
+  }
+  if (provider === 'llama' && process.env.OPENROUTER_API_KEY) {
+    const started = Date.now(); const response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': process.env.CLIENT_ORIGIN || 'http://localhost:5173', 'X-OpenRouter-Title': 'Veritas Fact Check' }, body: JSON.stringify({ model: process.env.OPENROUTER_LLAMA_MODEL || 'meta-llama/llama-3.2-3b-instruct:free', messages: [{ role: 'system', content: system }, { role: 'user', content: claim }], response_format: { type: 'json_object' } }) });
+    if (!response.ok) throw new Error(`Llama request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
+    const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
+  }
+  if (provider === 'deepseek' && process.env.OPENROUTER_API_KEY) {
+    const started = Date.now(); const response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'HTTP-Referer': process.env.CLIENT_ORIGIN || 'http://localhost:5173', 'X-OpenRouter-Title': 'Veritas Fact Check' }, body: JSON.stringify({ model: process.env.OPENROUTER_DEEPSEEK_MODEL || 'deepseek/deepseek-r1:free', messages: [{ role: 'system', content: system }, { role: 'user', content: claim }], response_format: { type: 'json_object' } }) });
+    if (!response.ok) throw new Error(`DeepSeek request failed (${response.status}): ${(await response.text()).slice(0, 280)}`);
+    const data = await response.json() as { choices?: { message?: { content?: string } }[] }; return parse(data.choices?.[0]?.message?.content || '', provider, Date.now() - started);
+  }
+  if (provider === 'huggingface' && process.env.HF_TOKEN) {
+    const started = Date.now(); const client = new OpenAI({ baseURL: 'https://router.huggingface.co/v1', apiKey: process.env.HF_TOKEN }); const response = await client.responses.create({ model: process.env.HF_MODEL || 'openai/gpt-oss-120b:groq', instructions: system, input: claim, store: false });
+    return parse(response.output_text, provider, Date.now() - started);
   }
   if (provider === 'nvidia' && process.env.NVIDIA_API_KEY) {
     const started = Date.now(); const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NVIDIA_API_KEY}` }, body: JSON.stringify({ model: process.env.NVIDIA_MODEL || 'nvidia/nemotron-3.5-lightning-30b-a3b', max_tokens: 500, temperature: 0, reasoning_budget: 0, stream: false, messages: [{ role: 'system', content: system }, { role: 'user', content: claim }] }) });

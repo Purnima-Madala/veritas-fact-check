@@ -14,7 +14,7 @@ A full-stack, cloud-ready fact-checking workspace that compares answers from mul
 
 ```text
 Vercel (React client) → Render/AWS (Express API) → MongoDB Atlas
-                                      ├─ OpenAI / Gemini / Claude / NVIDIA NIM
+                                      ├─ OpenAI / Gemini / Claude / Llama / DeepSeek / Hugging Face / NVIDIA NIM
                                       └─ AWS S3 (optional PDF archive)
 Firebase Authentication can be enforced by setting `REQUIRE_AUTH=true` and Firebase Admin environment variables. The client can send a Firebase ID token as `Authorization: Bearer <token>`; unauthenticated local development remains the default.
 ```
