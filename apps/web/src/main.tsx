@@ -5,6 +5,7 @@ import { signInWithGoogle } from './firebase';
 import './styles.css';
 import './overall.css';
 import './auth-extra.css';
+import './dark-contrast.css';
 
 type Result = { id?: string; claim: string; createdAt: string; models: { id:string; name:string; verdict:string; response:string; confidence:number; correctness:number; relevance:number; latency:number; tokens:number; sources:{title:string;url:string}[] }[]; recommendation:string; consensus:number; hallucinationRisk:number; summary:string; overallAnswer?: { verdict:string; correctnessScore:number; answer:string; references:{title:string;url:string}[]; referenceStatus:string }; providerErrors?: { provider:string; message:string }[] };
 type User = { id:string; name:string; email:string };

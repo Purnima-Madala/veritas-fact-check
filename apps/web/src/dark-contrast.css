@@ -1,0 +1,13 @@
+/* Dark-theme-only contrast improvements. Light-theme colors remain unchanged. */
+main.dark{--blue:#8de0db;--muted:#c0d5d8;--line:#477277;--wash:#1d474b}
+main.dark .model.on{background:#286267;border-color:#8de0db;color:#f4ffff}
+main.dark .pills span{background:#245458;color:#c3fffb}
+main.dark .sources a,main.dark .trusted-sources a,main.dark .text-button{color:#9ee9e4}
+main.dark .answer-top b{background:#5a4e17;color:#fff0a6}
+main.dark .answer-top b.true{background:#15594f;color:#c7fff1}
+main.dark .answer-top b.false{background:#6a302d;color:#ffd9d3}
+main.dark .provider-errors{border-color:#a95546;background:#4b2725;color:#ffd9d3}
+main.dark .error,main.dark .delete-one,main.dark .delete-all{color:#ff9e91}
+main.dark .radar .radar-fill{fill:#8de0db55;stroke:#a8f5ef}
+main.dark .area polygon{fill:#ef8a5655}
+main.dark .cube-bar b{color:#f4ffff}
